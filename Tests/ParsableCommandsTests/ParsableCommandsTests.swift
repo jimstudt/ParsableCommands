@@ -18,7 +18,7 @@ final class ParsableCommandsTests: XCTestCase {
         XCTAssertEqual( tokenize("echo \\\"foo\\\" bar"), ["echo", "\"foo\"", "bar"])
         XCTAssertEqual( tokenize("echo \"foo \\\"bar\\\"\" day"), ["echo", "foo \"bar\"", "day"])
         XCTAssertEqual( tokenize("echo 'foo \\'bar\\'' day"), ["echo", "foo 'bar'", "day"])
-
+        XCTAssertEqual( tokenize("echo '' bar"), ["echo", "", "bar"])
 
    }
     static var allTests = [

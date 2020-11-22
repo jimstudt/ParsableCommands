@@ -26,58 +26,74 @@ import ArgumentParser
 internal func tokenize( _ command:String) -> [String] {
     var result : [String] = []
     var iter = command.makeIterator()
-    var token : String = ""
+    var token : String? = nil
     var escaped : Bool = false
+    
+    /// Add a character to the token
+    ///
+    /// Create the token if needed, otherwise just append.
+    ///
+    /// - Parameter character: The character to add
+    func accept( _ character : Character) {
+        if token != nil {
+            token?.append(character)
+        } else {
+            token = String(character)
+        }
+    }
+    
+    /// Read until the `unquote` terminating character. Respect the backslash.
+    ///
+    /// This may create a token, even it accepts no characters. This is required
+    /// for matching empty strings.
+    ///
+    /// - Parameter unquote: The character to terminate the quote, unless escapted.
+    func quoted( unquote : Character) {
+        var escaped = false
+        
+        // we know we are making a token, even if we
+        // accept no characters from a non-token start.
+        if token == nil { token = "" }
+        
+        while let qch = iter.next() {
+            switch (qch,escaped) {
+            case ( unquote, false):
+                return           // <<-- out loop exit
+            case ("\\", false):
+                escaped = true
+            default:
+                escaped = false
+                accept(qch)
+            }
+        }
+    }
     
     // Grab a character until there are none left
     while let ch = iter.next() {
         switch ( ch, escaped) {
         case ( "\"", false):
-            // We are beginning a " delimited string
-            var quoteEscaped = false
-            loop: while let qch = iter.next() {
-                switch (qch,quoteEscaped) {
-                case ( "\"", false):
-                    break loop
-                case ("\\", false):
-                    quoteEscaped = true
-                default:
-                    quoteEscaped = false
-                    token.append(qch)
-                }
-            }
+            quoted( unquote:"\"")
         case ("'", false):
-            // We are beginning a '"' delimited string
-            var apostropheEscaped = false
-            loop: while let ach = iter.next() {
-                switch (ach, apostropheEscaped) {
-                case ( "'", false):
-                    break loop
-                case ("\\", false):
-                    apostropheEscaped = true
-                default:
-                    apostropheEscaped = false
-                    token.append(ach)
-                }
-            }
+            quoted( unquote:"'")
         case ("\\", false):
             // A backslash which introduces an escape sequence
             escaped = true
         case (let ch, false) where ch.isWhitespace:
             // Whitespace.
-            if token != "" {
+            if let t = token {
                 // If we were making a token, finish it and put it in the arguments
-                result.append(token)
-                token = ""
+                result.append(t)
+                token = nil
             }
         default:
             // Any other character, possibly following a backslash, add to the token
             escaped = false
-            token.append(ch)
+            accept(ch)
         }
     }
     
-    if token != "" { result.append(token)}
+    // if a token is in progress, finish it.
+    if let t = token { result.append(t)}
     
     return result
 }
