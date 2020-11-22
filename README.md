@@ -1,7 +1,7 @@
 # ParsableCommands
 
-The ParsableCommands protocol expands on [Swift Argument Parser] to handle many 
-commands, which are not structured as subcommands of a main command.
+The ParsableCommands protocol expands on [Swift Argument Parser](https://github.com/apple/swift-argument-parser) 
+to handle many commands, which are not structured as subcommands of a main command.
 
 It is MIT licensed.
 
@@ -33,6 +33,8 @@ struct MyCommands : ParsableCommands {
 // Read lines from stdin and send them out to the commands.
 while let line = readLine(prompt: "$ ", strippingNewline: true) {
     do {
+        // This will break `line` like shell does. You could also pass
+        // a prebrokenup array of strings.
         try MyCommands.parse( line).run()
     } catch ParserErrors.noCommand {
         // it's ok, just a blank line or something got in.
