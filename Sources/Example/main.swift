@@ -46,6 +46,17 @@ struct Exit: ConsoleCommand {
     }
 }
 
+/// A command with a long enough abstract to force it to wrap for testing.
+struct Elucidate: ConsoleCommand {
+    static var configuration
+        = CommandConfiguration(abstract: "Explain a topic in great detail and possibly at great length.")
+
+    mutating func run( context:ConsoleContext) {
+        context.write("Nah, I'm good.\n")
+    }
+}
+
+
 /// A command to get help for either a specific command, or to list the
 /// available commands.
 struct Help: ConsoleCommand {
@@ -57,19 +68,19 @@ struct Help: ConsoleCommand {
     mutating func run( context:ConsoleContext) {
         if let cmdName = command {
             if let cmd = ConsoleCommands[cmdName] {
-                context.write( cmd.helpMessage())
+                context.write( cmd.helpMessage(columns: 40))
             } else {
                 context.write("No such command: \(cmdName)\n")
             }
         } else {
-            context.write( ConsoleCommands.helpMessage() )
+            context.write( ConsoleCommands.helpMessage(columns: 40) )
         }
     }
 }
 
 /// Here we gather up all of our commands. You will need one of these.
 struct ConsoleCommands : ParsableCommands {
-    static var commands : [ParsableCommand.Type] = [ Echo.self, Exit.self, Help.self ]
+    static var commands : [ParsableCommand.Type] = [ Echo.self, Exit.self, Help.self, Elucidate.self ]
 }
 
 /// A special kind of ParsableCommand which needs a `ConsoleContext` to run.
